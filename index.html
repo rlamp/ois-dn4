@@ -1,92 +1,224 @@
-
 <!DOCTYPE html>
 <html>
-	<head>
-	    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-	    <title>EhrScape - Vnos in poizvedovanje po EHR podatkih</title>
-	    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.1.0/jquery.min.js"></script>
-	    <link href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet">
-	    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
-	    <script src="demo.js"></script>
-	    <style>
-	  		body {padding: 10px;}
-	  		.btn {margin-top: 10px;}
-	  		.obvestilo {margin-left:10px;}
-	  	</style>
-	</head>
-	<body>
-		<div class="page-header"><h2>Vnos in poizvedovanje po EHR podatkih <small>EhrScape platforma</small></h2></div>
-		<div class="row">
-			<div class="col-lg-6 col-md-6 col-sm-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<div class="row">
-							<div class="col-lg-8 col-md-8 col-sm-8"><b>Kreiraj EHR zapis</b> za novega bolnika</div>
-							<div class="col-lg-4 col-md-4 col-sm-4"><select class="form-control input-sm" id="preberiPredlogoBolnika"><option value=""></option><option value="Pujsa,Pepa,1938-10-30T14:58">Pujsa Pepa</option></select></div>
-						</div>
-					</div>
+<head>
+	<title>myPup - EHR za spremljanje odvajanja blata</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<script src="demo.js"></script>
+	<style type="text/css">
+		.panel-heading .accordion-toggle:after {
+			/* symbol for "opening" panels */
+			font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
+			content:"\e114";    /* adjust as needed, taken from bootstrap.css */
+			float: right;        /* adjust as needed */
+			color: grey;         /* adjust as needed */
+		}
+		.panel-heading .accordion-toggle.collapsed:after {
+			/* symbol for "collapsed" panels */
+			content:"\e079";    /* adjust as needed, taken from bootstrap.css */
+		}
+
+		.panel-heading a:after {
+			font-family:'Glyphicons Halflings';
+			content:"\2212";
+			float: right;
+			color: grey;
+		}
+		.panel-heading a.collapsed:after {
+			content:"\2b";
+		}
+
+		.btn {
+			margin-top: 5px;
+			margin-bottom: 5px;
+		}
+		span {
+			margin-left: 2px;
+		}
+	</style>
+</head>
+
+
+<body style="background-color:#F0F0F0">
+	<div class="container">
+		<div align="center" class="jumbotron" style="background-color:#996633; border-radius:48%">
+			<h1 style="color:white">myPup</h1>
+			<small style="color:white;font-size:10px;">EhrScape platforma</small>
+		</div>
+
+		<div class="panel-group" id="accordion">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
+							Dodaj novo osebo
+						</a>
+					</h4>
+				</div>
+				<div id="collapseOne" class="panel-collapse collapse">
 					<div class="panel-body">
-						<span class="label label-default">Ime</span><input id="kreirajIme" type="text" class="form-control input-mini" placeholder="Osama">
-						<span class="label label-default">Priimek</span><input id="kreirajPriimek" type="text" class="form-control" placeholder="Bin Laden">
-						<span class="label label-default">Datum rojstva</span><input id="kreirajDatumRojstva" type="text" class="form-control" placeholder="1957-03-10T09:08">
-						<button type="button" class="btn btn-primary btn-xs" onclick="kreirajEHRzaBolnika()">Dodaj osnovne podatke o bolniku</button><span id="kreirajSporocilo"></span>
-				  	</div>
+						<form class="form" role="form">
+							<div class="form-group">
+								<span class="label label-default">Ime</span><input id="createName" type="text" class="form-control input-mini" placeholder="Zlobni">
+							</div>
+							<div class="form-group">
+								<span class="label label-default">Priimek</span><input id="createSurname" type="text" class="form-control" placeholder="Volk">
+							</div>
+							<div class="form-group">
+								<span class="label label-default">Datum rojstva</span><input id="createDateTime" type="text" class="form-control" placeholder="2001-11-09T08:46">
+							</div>
+							<button type="button" class="btn btn-primary btn-xs" onclick="createEHR()">Dodaj</button><span id="createMsg"></span>
+						</form>
+					</div>
 				</div>
 			</div>
-			<div class="col-lg-6 col-md-6 col-sm-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<div class="row">
-							<div class="col-lg-8 col-md-8 col-sm-8"><b>Preberi EHR zapis</b> obstoječega bolnika</div>
-							<div class="col-lg-4 col-md-4 col-sm-4"><select class="form-control input-sm" id="preberiObstojeciEHR"><option value=""></option><option value="254f791d-2e7c-49d9-b646-376f62d6ead5">Dejan Lavbič</option><option value="d564c6a3-5a43-4fcc-bfa7-9ac76e9673bd">Pujsa Pepa</option><option value="b931580f-2b05-488b-985b-8d9ffb08ad02">Ata Smrk</option></select></div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo">
+							Dodaj nov EHR vnos
+						</a>
+					</h4>
+				</div>
+				<div id="collapseTwo" class="panel-collapse collapse">
+					<div class="panel-body">
+						<label class="label label-danger"> PROTOTIP: ročno vnašanje je omogočeno le začasno, v pihodnje avtomatsko vnašanje z eŠkoljko</label>
+						<form class="form" role="form">
+							<div class="form-group">
+								<label for="ehrIdPoizvedba" class="label label-default">EHR ID</label>
+								<input type="text" class="form-control" id="ehrIdPoizvedba" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
+							</div>
+							<div class="form-group">
+								<label for="datumcas" class="label label-default">Datum in čas</label>
+								<input type="text" class="form-control" id="datumcas" placeholder="2001-11-09T08:46" value="2001-11-09T08:46">
+							</div>
+							<div class="form-group">
+								<label for="barva" class="label label-default">Barva</label>
+								<select type="select" class="form-control" id="barva">
+									<option selected style="display:none;"></option>
+									<option value="at0022">Bela</option>
+									<option value="at0019">Bordo</option>
+									<option value="at0016">Črna</option>
+									<option value="at0020">Rdeča</option>
+									<option value="at0017">Rjava</option>
+									<option value="at0021">Rumena</option>
+									<option value="at0033">Srebrna</option>
+									<option value="at0034">Vijolična</option>
+									<option value="at0018">Zelena</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="krv" class="label label-default checkbox-inline">Krvavitev</label><input type="checkbox" value="" id="krv">
+							</div>
+							<div class="form-group">
+								<label for="kons" class="label label-default">Konsistenca</label>
+								<select type="select" class="form-control" id="kons">
+									<option selected style="display:none;"></option>
+									<option value="at0035">T1 - Blato se prikaže v obliki ločenih trdih kepic, ki so podobni oreščkom</option>
+									<option value="at0036">T2 - Blato je na videz podobno klobasi, ampak je grudasto</option>
+									<option value="at0037">T3 - Blato se izloči v klobasi podobni obliki, vendar z razpokami na površini</option>
+									<option value="at0038">T4 - Blato je gladko in mehko, v obliki klobase ali kače</option>
+									<option value="at0039">T5 - Blato oblikuje mehke kepe z jasnimi robovi</option>
+									<option value="at0040">T6 - Blato vsebuje puhaste koščke z raztrganimi robovi</option>
+									<option value="at0041">T7 - Blato je večinoma tekoče, brez trdih kosov</option>
+								</select>
+							</div>
+							<div class="form-group">
+								<label for="kolicina" class="label label-default">Masa</label>
+								<div class="input-group">
+									<input id="kolicina" type="text" class="form-control input-mini" placeholder="123.45">
+									<span class="input-group-addon">g</span>
+								</div>
+							</div>
+							<div class="form-group">
+								<label for="volumen" class="label label-default">Volumen</label>
+								<div class="input-group">
+									<input id="volumen" type="text" class="form-control input-mini" placeholder="123.45">
+									<span class="input-group-addon">mL</span>
+								</div>
+							</div>
+							<button type="button" class="btn btn-primary btn-xs" onclick="dodajEHRvnos()">Dodaj</button><span id="ehrvnosMsg"></span>
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h4 class="panel-title">
+						<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseThree">Odpri kartoteko</a>
+					</h4>
+				</div>
+				<div id="collapseThree" class="panel-collapse collapse">
+					<div class="panel-body">		
+						<form role="form">
+							<div class="form-group">
+								<label for="preberiEHRid" class="label label-default">EHR ID</label>
+								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5">
+							</div>
+							<button type="button" class="btn btn-primary btn-xs" onclick="poizvedi()">Poizvedi</button><span id="poizvediMsg"></span>
+						</form>
+
+						<div class="panel-group" id="accordion2" style="display:none;">
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<h4 class="panel-title">
+										<a data-toggle="collapse" data-target="#collapse2One" href="#collapseOne" class="collapsed" id="osnovnipodatki">Osnovni podatki</a>
+									</h4>
+								</div>
+								<div id="collapse2One" class="panel-collapse collapse">
+									<div class="panel-body">
+										<table class="table table-bordered">
+											<tbody>
+												<tr>
+													<td><strong>EHR ID:</strong></td>
+													<td><span id="poizvedbaId"></span></td>
+												</tr>
+												<tr>
+													<td><strong>Ime:</strong></td>
+													<td><span id="poizvedbaIme"></span></td>
+												</tr>
+												<tr>
+													<td><strong>Priimek:</strong></td>
+													<td><span id="poizvedbaPriimek"></span></td>
+												</tr>
+												<tr>
+													<td><strong>Datum rojstva:</strong></td>
+													<td><span id="poizvedbaRojstvo"></span></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<h4 class="panel-title">
+										<a data-toggle="collapse" data-target="#collapse2Two" href="#collapseTwo" class="collapsed" onclick="poizvediZgodovina()">Zgodovina</a>
+									</h4>
+								</div>
+								<div id="collapse2Two" class="panel-collapse collapse">
+									<div class="panel-body">
+										<table class="table table-hover">
+											<thead>
+												<tr>
+													<th>Datum/čas</th>
+													<th>Stanje</th>
+												</tr>
+											</thead>
+											<tbody id="zgodovina">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
 						</div>
 					</div>
-					<div class="panel-body">
-						<span class="label label-default">EHR ID</span><input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="7b661e12-3a98-21ad-c29e-2dc9f5a3d885">
-						<button type="button" class="btn btn-primary btn-xs" onclick="preberiEHRodBolnika()">Preberi osnovne podatke o bolniku</button><span id="preberiSporocilo"></span>
-				  	</div>
 				</div>
 			</div>
 		</div>
-		<div class="row">
-			<div class="col-lg-6 col-md-6 col-sm-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<div class="row">
-							<div class="col-lg-8 col-md-8 col-sm-8"><b>Vnos</b> meritve <b>vitalnih znakov</b> bolnika</div>
-							<div class="col-lg-4 col-md-4 col-sm-4"><select class="form-control input-sm" id="preberiObstojeciVitalniZnak"><option value=""></option><option value="b931580f-2b05-488b-985b-8d9ffb08ad02|2014-11-21T11:40Z|185|80.0|36.50|118|92|98|medicinska sestra Smrketa">Ata Smrk</option></select></div>
-						</div>
-					</div>				
-					<div class="panel-body">
-						<span class="label label-default">EHR ID</span><input id="dodajVitalnoEHR" type="text" class="form-control input-mini" placeholder="7b661e12-3a98-21ad-c29e-2dc9f5a3d885">
-						<span class="label label-default">Datum in ura</span><input id="dodajVitalnoDatumInUra" type="text" class="form-control input-mini" placeholder="2014-11-21T11:40Z">
-						<span class="label label-default">Telesna višina</span><div class="input-group"><input id="dodajVitalnoTelesnaVisina" type="text" class="form-control input-mini" placeholder="185"><span class="input-group-addon">cm</span></div>
-						<span class="label label-default">Telesna teža</span><div class="input-group"><input id="dodajVitalnoTelesnaTeza" type="text" class="form-control input-mini" placeholder="80.00"><span class="input-group-addon">kg</span></div>
-						<span class="label label-default">Telesna temperatura</span><div class="input-group"><input id="dodajVitalnoTelesnaTemperatura" type="text" class="form-control input-mini" placeholder="36.50"><span class="input-group-addon">°C</span></div>
-						<span class="label label-default">Sistolični krvni tlak</span><div class="input-group"><input id="dodajVitalnoKrvniTlakSistolicni" type="text" class="form-control input-mini" placeholder="118"><span class="input-group-addon">mm Hg</span></div>
-						<span class="label label-default">Diastolični krvni tlak</span><div class="input-group"><input id="dodajVitalnoKrvniTlakDiastolicni" type="text" class="form-control input-mini" placeholder="92"><span class="input-group-addon">mm Hg</span></div>
-						<span class="label label-default">Nasičenost krvi s kisikom</span><div class="input-group"><input id="dodajVitalnoNasicenostKrviSKisikom" type="text" class="form-control input-mini" placeholder="98"><span class="input-group-addon">%</span></div>
-						<span class="label label-default">Merilec</span><input id="dodajVitalnoMerilec" type="text" class="form-control input-mini" placeholder="medicinska sestra Hrastova Micka">
-						<button type="button" class="btn btn-primary btn-xs" onclick="dodajMeritveVitalnihZnakov()">Dodaj meritve vitalnih znakov</button><span id="dodajMeritveVitalnihZnakovSporocilo"></span>
-				  	</div>
-				</div>
-			</div>	
-			<div class="col-lg-6 col-md-6 col-sm-6">
-				<div class="panel panel-default">
-					<div class="panel-heading">
-						<div class="row">
-							<div class="col-lg-6 col-md-6 col-sm-6"><b>Pregled</b> meritev <b>vitalnih znakov</b> bolnika</div>
-							<div class="col-lg-3 col-md-3 col-sm-3"><select class="form-control input-sm" id="preberiTipZaVitalneZnake"><option value="telesna temperatura">telesna temperatura</option><option value="telesna temperatura AQL">telesna temperatura (filter na podhladitev)</option><option value="telesna teža">telesna teža</option></select></div>
-							<div class="col-lg-3 col-md-3 col-sm-3"><select class="form-control input-sm" id="preberiEhrIdZaVitalneZnake"><option value=""></option><option value="b931580f-2b05-488b-985b-8d9ffb08ad02">Ata Smrk</option><option value="d564c6a3-5a43-4fcc-bfa7-9ac76e9673bd">Pujsa Pepa</option></select></div>
-						</div>
-					</div>				
-					<div class="panel-body">
-						<span class="label label-default">EHR ID</span><input id="meritveVitalnihZnakovEHRid" type="text" class="form-control input-mini" placeholder="7b661e12-3a98-21ad-c29e-2dc9f5a3d885">
-						<button type="button" class="btn btn-primary btn-xs" onclick="preberiMeritveVitalnihZnakov('telesna temperatura')">Preberi meritve vitalnih znakov</button><span id="preberiMeritveVitalnihZnakovSporocilo"></span>
-						<div id="rezultatMeritveVitalnihZnakov"></div>
-				  	</div>
-				</div>			
-			</div>
-		</div>
-	</body>
+	</div>
+</body>
 </html>
