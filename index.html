@@ -4,21 +4,22 @@
 	<title>myPup - EHR za spremljanje odvajanja blata</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"><!-- bootstrap css -->
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script><!-- jquery -->
+	<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script><!-- bootstrap js-->
+	<script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script><!-- d3js -->
 	<script src="demo.js"></script>
 	<style type="text/css">
 		.panel-heading .accordion-toggle:after {
 			/* symbol for "opening" panels */
-			font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
-			content:"\e114";    /* adjust as needed, taken from bootstrap.css */
-			float: right;        /* adjust as needed */
-			color: gray;         /* adjust as needed */
+			font-family: 'Glyphicons Halflings';
+			content:"\e114";    
+			float: right;        
+			color: gray;    
 		}
 		.panel-heading .accordion-toggle.collapsed:after {
 			/* symbol for "collapsed" panels */
-			content:"\e079";    /* adjust as needed, taken from bootstrap.css */
+			content:"\e079";    
 		}
 
 		.panel-heading a:after {
@@ -41,7 +42,7 @@
 
 		.masterdetail {
 			border-right: thick solid LightGray;
-    		border-left: thick solid LightGray;
+			border-left: thick solid LightGray;
 		}
 	</style>
 </head>
@@ -66,17 +67,19 @@
 				<div id="collapseOne" class="panel-collapse collapse">
 					<div class="panel-body">
 						<form class="form" role="form">
-							<div class="form-group">
-								<span class="label label-default">Ime</span><input id="createName" type="text" class="form-control input-mini" placeholder="Zlobni">
-							</div>
-							<div class="form-group">
-								<span class="label label-default">Priimek</span><input id="createSurname" type="text" class="form-control" placeholder="Volk">
-							</div>
-							<div class="form-group">
-								<span class="label label-default">Datum rojstva</span><input id="createDateTime" type="text" class="form-control" placeholder="2001-11-09T08:46">
-							</div>
-							<button type="button" class="btn btn-primary btn-xs" onclick="createEHR()">Dodaj</button><span id="createMsg"></span>
+							<div class="row">
+								<div class="form-group col-md-4">
+									<span class="label label-default">Ime</span><input id="createName" type="text" class="form-control input-mini" placeholder="Zlobni">
+								</div>
+								<div class="form-group col-md-4">
+									<span class="label label-default">Priimek</span><input id="createSurname" type="text" class="form-control" placeholder="Volk">
+								</div>
+								<div class="form-group col-md-4">
+									<span class="label label-default">Datum rojstva</span><input id="createDateTime" type="text" class="form-control" placeholder="2001-11-09T08:46">
+								</div>
+							</div>	
 						</form>
+						<button type="button" class="btn btn-primary btn-xs" onclick="createEHR()">Dodaj</button><span id="createMsg"></span>
 					</div>
 				</div>
 			</div>
@@ -92,60 +95,66 @@
 					<div class="panel-body">
 						<label class="label label-danger"> PROTOTIP: ročno vnašanje je omogočeno le začasno, v pihodnje avtomatsko vnašanje z eŠkoljko</label>
 						<form class="form" role="form">
-							<div class="form-group">
-								<label for="ehrIdPoizvedba" class="label label-default">EHR ID</label>
-								<input type="text" class="form-control" id="ehrIdPoizvedba" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
-							</div>
-							<div class="form-group">
-								<label for="datumcas" class="label label-default">Datum in čas</label>
-								<input type="text" class="form-control" id="datumcas" placeholder="2001-11-09T08:46" value="2001-11-09T08:46">
-							</div>
-							<div class="form-group">
-								<label for="barva" class="label label-default">Barva</label>
-								<select type="select" class="form-control" id="barva">
-									<option selected style="display:none;"></option>
-									<option value="at0022">Bela</option>
-									<option value="at0019">Bordo</option>
-									<option value="at0016">Črna</option>
-									<option value="at0020">Rdeča</option>
-									<option value="at0017">Rjava</option>
-									<option value="at0021">Rumena</option>
-									<option value="at0033">Srebrna</option>
-									<option value="at0034">Vijolična</option>
-									<option value="at0018">Zelena</option>
-								</select>
-							</div>
-							<div class="form-group">
-								<label for="krv" class="label label-default checkbox-inline">Krvavitev</label><input type="checkbox" value="" id="krv">
-							</div>
-							<div class="form-group">
-								<label for="kons" class="label label-default">Konsistenca</label>
-								<select type="select" class="form-control" id="kons">
-									<option selected style="display:none;"></option>
-									<option value="at0035">T1 - Blato se prikaže v obliki ločenih trdih kepic, ki so podobni oreščkom</option>
-									<option value="at0036">T2 - Blato je na videz podobno klobasi, ampak je grudasto</option>
-									<option value="at0037">T3 - Blato se izloči v klobasi podobni obliki, vendar z razpokami na površini</option>
-									<option value="at0038">T4 - Blato je gladko in mehko, v obliki klobase ali kače</option>
-									<option value="at0039">T5 - Blato oblikuje mehke kepe z jasnimi robovi</option>
-									<option value="at0040">T6 - Blato vsebuje puhaste koščke z raztrganimi robovi</option>
-									<option value="at0041">T7 - Blato je večinoma tekoče, brez trdih kosov</option>
-								</select>
-							</div>
-							<div class="form-group">
-								<label for="kolicina" class="label label-default">Masa</label>
-								<div class="input-group">
-									<input id="kolicina" type="text" class="form-control input-mini" placeholder="123.45">
-									<span class="input-group-addon">g</span>
+							<div class="row">
+								<div class="form-group col-dm-4 col-sm-4">
+									<label for="ehrIdPoizvedba" class="label label-default">EHR ID</label>
+									<input type="text" class="form-control" id="ehrIdPoizvedba" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
+								</div>
+								<div class="form-group col-md-4 col-sm-4">
+									<label for="datumcas" class="label label-default">Datum in čas</label>
+									<input type="text" class="form-control" id="datumcas" placeholder="2001-11-09T08:46" value="2001-11-09T08:46">
+								</div>
+								<div class="form-group col-md-3 col-sm-3" >
+									<label for="barva" class="label label-default">Barva</label>
+									<select type="select" class="form-control" id="barva">
+										<option selected style="display:none;"></option>
+										<option value="at0022">Bela</option>
+										<option value="at0019">Bordo</option>
+										<option value="at0016">Črna</option>
+										<option value="at0020">Rdeča</option>
+										<option value="at0017">Rjava</option>
+										<option value="at0021">Rumena</option>
+										<option value="at0033">Srebrna</option>
+										<option value="at0034">Vijolična</option>
+										<option value="at0018">Zelena</option>
+									</select>
+								</div>
+								<div class="form-group col-md-1 col-sm-1">
+									<label for="krv" class="label label-default checkbox-inline">Krvavitev</label><input type="checkbox" value="" id="krv">
 								</div>
 							</div>
-							<div class="form-group">
-								<label for="volumen" class="label label-default">Volumen</label>
-								<div class="input-group">
-									<input id="volumen" type="text" class="form-control input-mini" placeholder="123.45">
-									<span class="input-group-addon">mL</span>
+							<div class="row">
+								
+								<div class="form-group col-md-6 col-sm-6">
+									<label for="kons" class="label label-default">Konsistenca</label>
+									<select type="select" class="form-control" id="kons">
+										<option selected style="display:none;"></option>
+										<option value="at0035">T1 - Blato se prikaže v obliki ločenih trdih kepic, ki so podobni oreščkom</option>
+										<option value="at0036">T2 - Blato je na videz podobno klobasi, ampak je grudasto</option>
+										<option value="at0037">T3 - Blato se izloči v klobasi podobni obliki, vendar z razpokami na površini</option>
+										<option value="at0038">T4 - Blato je gladko in mehko, v obliki klobase ali kače</option>
+										<option value="at0039">T5 - Blato oblikuje mehke kepe z jasnimi robovi</option>
+										<option value="at0040">T6 - Blato vsebuje puhaste koščke z raztrganimi robovi</option>
+										<option value="at0041">T7 - Blato je večinoma tekoče, brez trdih kosov</option>
+									</select>
+								</div>
+								<div class="form-group col-md-3 col-sm-3">
+									<label for="kolicina" class="label label-default">Masa</label>
+									<div class="input-group">
+										<input id="kolicina" type="text" class="form-control input-mini" placeholder="123.45">
+										<span class="input-group-addon">g</span>
+									</div>
+								</div>
+								<div class="form-group col-md-3 col-sm-3" >
+									<label for="volumen" class="label label-default">Volumen</label>
+									<div class="input-group">
+										<input id="volumen" type="text" class="form-control input-mini" placeholder="123.45">
+										<span class="input-group-addon">mL</span>
+									</div>
 								</div>
 							</div>
-							<button type="button" class="btn btn-primary btn-xs" onclick="dodajEHRvnos()">Dodaj</button><span id="ehrvnosMsg"></span>
+							<button type="button" class="btn btn-primary btn-xs" onclick="dodajEHRvnos()">Dodaj</button>
+							<span id="ehrvnosMsg"></span>
 						</form>
 					</div>
 				</div>
@@ -164,13 +173,15 @@
 								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
 							</div>
 							<button type="button" class="btn btn-primary btn-xs" onclick="poizvedi()">Poizvedi</button><span id="poizvediMsg"></span>
-						</form>
 
+						</form>
+						<hr>
 						<div class="panel-group" id="accordion2" style="display:none;">
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<h4 class="panel-title">
-										<a data-toggle="collapse" data-target="#collapse2One" href="#collapseOne" class="collapsed" id="osnovnipodatki">Osnovni podatki</a>
+										<a data-toggle="collapse" data-target="#collapse2One" href="#collapse2One" class="collapsed" id="osnovnipodatki">Osnovni podatki
+										</a>
 									</h4>
 								</div>
 								<div id="collapse2One" class="panel-collapse collapse">
@@ -201,7 +212,7 @@
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<h4 class="panel-title">
-										<a data-toggle="collapse" data-target="#collapse2Two" href="#collapseTwo" class="collapsed" onclick="poizvediZgodovina()">Zgodovina</a>
+										<a data-toggle="collapse" data-target="#collapse2Two" href="#collapse2Two" class="collapsed" onclick="poizvediZgodovina()">Zgodovina</a>
 									</h4>
 								</div>
 								<div id="collapse2Two" class="panel-collapse collapse">
@@ -216,6 +227,31 @@
 											<tbody id="zgodovina">
 											</tbody>
 										</table>
+									</div>
+								</div>
+							</div>
+							<div class="panel panel-default">
+								<div class="panel-heading">
+									<h4 class="panel-title">
+										<a data-toggle="collapse" data-target="#collapse2Three" href="#collapse2Three" class="collapsed" onclick="">Vizualizacija
+										</a>
+									</h4>
+								</div>
+								<div id="collapse2Three" class="panel-collapse collapse">
+									<div class="panel-body">
+										<form class="form-inline" role="form">
+											<div class="form-group">
+												<span class="label label-default">Datum</span><input style="width:100px;" id="grafdatum" type="text" class="form-control" placeholder="2001-11-09" value="2001-11-09">
+											</div>
+											<div class="form-group">
+												<span class="label label-default">+/- dni</span><input style="width:45px;" id="grafpm" type="text" class="form-control" placeholder="5" value="5">
+											</div>
+											<button type="button" class="btn btn-primary btn-xs" onclick="">Nariši</button><span id="narisi"></span>
+										</form>
+										<hr>
+										<div id="graf">
+											ttest
+										</div>
 									</div>
 								</div>
 							</div>

@@ -237,3 +237,64 @@ function poizvediDetail(i){
 		});
 	}
 }
+
+function poizvediDatumi(){
+	if($("#graf").empty()){
+		var ehrId = $("#poizvedbaId").text();
+
+		 
+
+			/*
+				TODO
+				->datum ki ga vpise +/- # dni poisces 
+				-> +/- < ?
+			*/
+
+
+
+		//poisce vse datume, dodaj meje
+		var aql = "select%20distinct%20a_a/data[at0001]/origin/value%20as%20origin%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'";
+
+		var datumi=new Object();
+
+		$.ajax({
+			url: baseUrl + "/query/?aql=" + aql,
+			type: 'GET',
+			headers: {"Ehr-Session": sessionId},
+			success: function (data) {
+				var result = data.resultSet;
+
+				result.forEach(function(d){
+					var dat = new Date(d.origin);
+					dat.setHours(1,0,0);
+
+					var dat1 = new Date(dat);
+					var dat2 = new Date(dat);
+					dat2.setDate(dat1.getDate()+1);
+
+					dat = dat.toISOString();
+					dat1 = dat1.toISOString();
+					dat2 = dat2.toISOString();
+					// dat1 <= x < dat2
+
+					//poisce za vsak datum kolikokrat se pojavi == kolikorakt je oseba kenjala tisti dan
+					aql="select%20count(a_a/data[at0001]/origin/value)%20as%20n%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value%20>=%20'"+dat1+"'%20and%20a_a/data[at0001]/origin/value%20<%20'"+dat2+"'";
+
+					$.ajax({
+						url: baseUrl + "/query/?aql=" + aql,
+						type: 'GET',
+						headers: {"Ehr-Session": sessionId},
+						success: function (data2) {
+							var rez=data2.resultSet[0].n;
+							datumi[dat]=rez;
+						}
+					});
+				});
+
+
+				//TODO rise graf v #graf
+
+			}
+		});
+	}
+}
