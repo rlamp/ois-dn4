@@ -23,6 +23,8 @@ function getSessionId() {
 	return response.responseJSON.sessionId;
 }
 
+var sessionId = getSessionId();
+
 function clearInputs(){
 	$("#createName").val("");
 	$("#createSurname").val("");
@@ -30,8 +32,6 @@ function clearInputs(){
 }
 
 function createEHR() {
-	sessionId = getSessionId();
-
 	var givenName = $("#createName").val();
 	var familyName = $("#createSurname").val();
 	var dateOfBirth = $("#createDateTime").val();
@@ -76,8 +76,6 @@ function createEHR() {
 }
 
 function poizvedi(){
-	sessionId = getSessionId();
-
 	var ehrId = $("#preberiEHRid").val();
 
 	if (!ehrId || ehrId.trim().length == 0) {
@@ -113,8 +111,6 @@ function copyToClipboard(text) {
 }
 
 function dodajEHRvnos() {
-	sessionId = getSessionId();
-
 	var ehrId = $("#ehrIdPoizvedba").val();
 	var datumInUra = $("#datumcas").val();
 	var barva = $("#barva").val();
@@ -185,9 +181,7 @@ function dodajEHRvnos() {
 
 function poizvediZgodovina(){
 	if ($("#zgodovina").empty()){
-		sessionId = getSessionId();
-
-		var ehrId = $("#preberiEHRid").val();
+		var ehrId = $("#poizvedbaId").text();
 
 		var aql="select%20a_a/data[at0001]/origin/value%20as%20origin,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0042]/value/value%20as%20Stanje%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ ehrId+"'%20order%20by%20origin%20desc";
 
@@ -197,7 +191,7 @@ function poizvediZgodovina(){
 			headers: {"Ehr-Session": sessionId},
 			success: function (data) {
 				var result = data.resultSet;
-
+				var i = 1;
 				result.forEach(function(obj){
 					var bgcl = "warning";
 					if(obj.Stanje == "Kritično"){
@@ -207,9 +201,38 @@ function poizvediZgodovina(){
 						bgcl = "success";
 					}
 
-					var tr = "<tr class='"+bgcl+"'><td>"+obj.origin+"</td><td>"+obj.Stanje+"</td></tr>";
+					var tr = "<tr id='master"+i.toString()+"'onclick='poizvediDetail("+i+")' data-toggle=\"collapse\" data-target=\"#detail"+i.toString()+"\" class='"+bgcl+"'><td>"+obj.origin+"</td><td>"+obj.Stanje+"</td></tr>";
+					var tr2="<tr id='detail"+i.toString()+"' class='collapse'><td colspan='2'><table class='table table-bordered'><tbody></tbody></table></td></tr>";
 					$("#zgodovina").append(tr);
+					$("#zgodovina").append(tr2);
+					i++;
 				});
+			}
+		});
+	}
+}
+
+function poizvediDetail(i){
+	$("#master"+i).toggleClass("masterdetail");
+	$("#detail"+i).toggleClass("masterdetail");
+	if($("#detail"+i+" tbody").empty()){
+		var ehrId = $("#poizvedbaId").text();
+		var datum = $("#master"+i+" td:first").text().slice(0, -10);
+
+		var aql="select%20distinct%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0015]/value/value%20as%20Barva,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0023]/value/value%20as%20Krvavitev,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0024]/value/value%20as%20Konsistenca,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0031]/value/magnitude%20as%20Masa_magnitude,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0032]/value/magnitude%20as%20Volumen_magnitude%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id/value='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value='"+datum+"'";
+
+		$.ajax({
+			url: baseUrl + "/query/?aql=" + aql,
+			type: 'GET',
+			headers: {"Ehr-Session": sessionId},
+			success: function (data) {
+				var result = data.resultSet;
+
+				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Barva:</strong></td><td>"+result[0].Barva+"</td></tr>");
+				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Krvavitev:</strong></td><td>"+result[0].Krvavitev+"</td></tr>");
+				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Konsistenca:</strong></td><td>"+result[0].Konsistenca+"</td></tr>");
+				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Masa:</strong></td><td>"+result[0].Masa_magnitude+" g</td></tr>");
+				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Volumen:</strong></td><td>"+result[0].Volumen_magnitude+" mL</td></tr>");
 			}
 		});
 	}

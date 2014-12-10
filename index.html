@@ -14,7 +14,7 @@
 			font-family: 'Glyphicons Halflings';  /* essential for enabling glyphicon */
 			content:"\e114";    /* adjust as needed, taken from bootstrap.css */
 			float: right;        /* adjust as needed */
-			color: grey;         /* adjust as needed */
+			color: gray;         /* adjust as needed */
 		}
 		.panel-heading .accordion-toggle.collapsed:after {
 			/* symbol for "collapsed" panels */
@@ -25,7 +25,7 @@
 			font-family:'Glyphicons Halflings';
 			content:"\2212";
 			float: right;
-			color: grey;
+			color: gray;
 		}
 		.panel-heading a.collapsed:after {
 			content:"\2b";
@@ -37,6 +37,11 @@
 		}
 		span {
 			margin-left: 2px;
+		}
+
+		.masterdetail {
+			border-right: thick solid LightGray;
+    		border-left: thick solid LightGray;
 		}
 	</style>
 </head>
@@ -156,7 +161,7 @@
 						<form role="form">
 							<div class="form-group">
 								<label for="preberiEHRid" class="label label-default">EHR ID</label>
-								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5">
+								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
 							</div>
 							<button type="button" class="btn btn-primary btn-xs" onclick="poizvedi()">Poizvedi</button><span id="poizvediMsg"></span>
 						</form>
@@ -173,19 +178,19 @@
 										<table class="table table-bordered">
 											<tbody>
 												<tr>
-													<td><strong>EHR ID:</strong></td>
+													<td class='col-md-3'><strong>EHR ID:</strong></td>
 													<td><span id="poizvedbaId"></span></td>
 												</tr>
 												<tr>
-													<td><strong>Ime:</strong></td>
+													<td class='col-md-3'><strong>Ime:</strong></td>
 													<td><span id="poizvedbaIme"></span></td>
 												</tr>
 												<tr>
-													<td><strong>Priimek:</strong></td>
+													<td class='col-md-3'><strong>Priimek:</strong></td>
 													<td><span id="poizvedbaPriimek"></span></td>
 												</tr>
 												<tr>
-													<td><strong>Datum rojstva:</strong></td>
+													<td class='col-md-3'><strong>Datum rojstva:</strong></td>
 													<td><span id="poizvedbaRojstvo"></span></td>
 												</tr>
 											</tbody>
