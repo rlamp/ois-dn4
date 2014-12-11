@@ -201,7 +201,7 @@ function poizvediZgodovina(){
 						bgcl = "success";
 					}
 
-					var tr = "<tr id='master"+i.toString()+"'onclick='poizvediDetail("+i+")' data-toggle=\"collapse\" data-target=\"#detail"+i.toString()+"\" class='"+bgcl+"'><td>"+obj.origin+"</td><td>"+obj.Stanje+"</td></tr>";
+					var tr = "<tr id='master"+i.toString()+"'onclick='poizvediDetail("+i+")' data-toggle=\"collapse\" data-target=\"#detail"+i.toString()+"\" class='"+bgcl+"'><td>"+obj.origin.slice(0,-13)+"</td><td>"+obj.Stanje+"</td></tr>";
 					var tr2="<tr id='detail"+i.toString()+"' class='collapse'><td colspan='2'><table class='table table-bordered'><tbody></tbody></table></td></tr>";
 					$("#zgodovina").append(tr);
 					$("#zgodovina").append(tr2);
@@ -217,7 +217,7 @@ function poizvediDetail(i){
 	$("#detail"+i).toggleClass("masterdetail");
 	if($("#detail"+i+" tbody").empty()){
 		var ehrId = $("#poizvedbaId").text();
-		var datum = $("#master"+i+" td:first").text().slice(0, -10);
+		var datum = $("#master"+i+" td:first").text();
 
 		var aql="select%20distinct%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0015]/value/value%20as%20Barva,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0023]/value/value%20as%20Krvavitev,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0024]/value/value%20as%20Konsistenca,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0031]/value/magnitude%20as%20Masa_magnitude,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0032]/value/magnitude%20as%20Volumen_magnitude%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id/value='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value='"+datum+"'";
 
@@ -239,62 +239,142 @@ function poizvediDetail(i){
 }
 
 function poizvediDatumi(){
-	if($("#graf").empty()){
-		var ehrId = $("#poizvedbaId").text();
+	$("svg").html("");
+	var ehrId = $("#poizvedbaId").text();
+	
+	var pm = parseInt($("#grafpm").val());
+	if(pm > 22){pm=22;}
+	if(pm<0){pm=0;}
 
-		 
+	var date = $("#grafdatum").val();
+	date = new Date(date);
+	date.setDate(date.getDate()-pm);
+	pm = (2*pm) + 1;
 
-			/*
-				TODO
-				->datum ki ga vpise +/- # dni poisces 
-				-> +/- < ?
-			*/
+	var datumi=[];
+	var count = 0;
+	var asindate = new Date(date);
+	asindate.setDate(date.getDate()-1);
 
+	for(var i = 0; i < pm; i++){
+		var dat = new Date(date);
+		dat.setDate(dat.getDate()+i)
 
+		var dat1 = new Date(dat);
+		var dat2 = new Date(dat);
+		dat2.setDate(dat1.getDate()+1);
 
-		//poisce vse datume, dodaj meje
-		var aql = "select%20distinct%20a_a/data[at0001]/origin/value%20as%20origin%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'";
-
-		var datumi=new Object();
+		dat = dat.toISOString();
+		dat1 = dat1.toISOString();
+		dat2 = dat2.toISOString();
+		// dat1 <= x < dat2
+		console.log(dat1); //prou
+		aql="select%20count(a_a/data[at0001]/origin/value)%20as%20n%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value%20>=%20'"+dat1+"'%20and%20a_a/data[at0001]/origin/value%20<%20'"+dat2+"'";
 
 		$.ajax({
 			url: baseUrl + "/query/?aql=" + aql,
 			type: 'GET',
 			headers: {"Ehr-Session": sessionId},
-			success: function (data) {
-				var result = data.resultSet;
+			success: function (data2) {
+				count++;
+				asindate.setDate(asindate.getDate()+1);
+				var rez=data2.resultSet[0].n;
+				
+				var tmp = new Object();
+				tmp["name"]=asindate.toISOString().slice(0,10);
+				tmp["value"]=rez;
+				console.log(tmp);
+				datumi.push(tmp);
 
-				result.forEach(function(d){
-					var dat = new Date(d.origin);
-					dat.setHours(1,0,0);
-
-					var dat1 = new Date(dat);
-					var dat2 = new Date(dat);
-					dat2.setDate(dat1.getDate()+1);
-
-					dat = dat.toISOString();
-					dat1 = dat1.toISOString();
-					dat2 = dat2.toISOString();
-					// dat1 <= x < dat2
-
-					//poisce za vsak datum kolikokrat se pojavi == kolikorakt je oseba kenjala tisti dan
-					aql="select%20count(a_a/data[at0001]/origin/value)%20as%20n%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value%20>=%20'"+dat1+"'%20and%20a_a/data[at0001]/origin/value%20<%20'"+dat2+"'";
-
-					$.ajax({
-						url: baseUrl + "/query/?aql=" + aql,
-						type: 'GET',
-						headers: {"Ehr-Session": sessionId},
-						success: function (data2) {
-							var rez=data2.resultSet[0].n;
-							datumi[dat]=rez;
-						}
-					});
-				});
-
-
-				//TODO rise graf v #graf
-
+				if(datumi.length == pm){;
+					risiGraf(datumi);
+				}
 			}
 		});
 	}
 }
+
+function type(d) {
+  d.value = +d.value;
+  return d;
+}
+
+function risiGraf(data){
+	$("#graf").css("display","block");
+	var margin = {top: 30, right: 40, bottom: 60, left: 50},
+	width = 480 - margin.left - margin.right,
+	height = 250 - margin.top - margin.bottom;
+
+	var x = d3.scale.ordinal()
+	.rangeRoundBands([0, width], .1);
+
+	var y = d3.scale.linear()
+	.range([height, 0]);
+
+	var xAxis = d3.svg.axis()
+	.scale(x)
+	.orient("bottom");
+
+	var yAxis = d3.svg.axis()
+	.scale(y)
+	.orient("left")    
+	.ticks(d3.max(data, function(d) { return d.value; }))
+	.tickFormat(d3.format("d"))
+	.tickSubdivide(0);
+
+	var chart = d3.select(".chart")
+	.attr("width", width + margin.left + margin.right)
+	.attr("height", height + margin.top + margin.bottom)
+	.append("g")
+	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+
+	x.domain(data.map(function(d) { return d.name; }));
+	y.domain([0, d3.max(data, function(d) { return d.value; })]);
+
+	chart.append("g")
+	.attr("class", "x axis")
+	.attr("transform", "translate(0," + height + ")")
+	.call(xAxis)
+	.selectAll("text")  
+	.style("text-anchor", "end")
+	.attr("dx", "-.8em")
+	.attr("dy", ".15em")
+	.attr("transform", function(d) {
+		return "rotate(-65)";
+	});
+
+	chart.append("g")
+	.attr("class", "y axis")
+	.call(yAxis);
+
+	chart.append("text")
+	.attr("class", "y label")
+	.attr("text-anchor", "middle")
+	.attr("y", 0 - margin.left)
+	.attr("dy", "1em")
+	.attr("x", 0 - (height / 2))
+	.attr("transform", "rotate(-90)")
+	.text("# defekacij");
+
+	chart.selectAll(".bar")
+	.data(data)
+	.enter().append("rect")
+	.attr("class", "bar")
+	.attr("x", function(d) { return x(d.name); })
+	.attr("y", function(d) { return y(d.value); })
+	.attr("height", function(d) { return height - y(d.value)+0.15; })
+	.attr("width", x.rangeBand());
+
+	$(window).resize();
+
+}
+
+$(window).on("resize", function() {
+	var aspect = 480 / 250,
+	chart = $(".chart");
+	var targetWidth = chart.parent().width();
+	chart.attr("width", targetWidth);
+	chart.attr("height", targetWidth / aspect);
+});

@@ -44,6 +44,25 @@
 			border-right: thick solid LightGray;
 			border-left: thick solid LightGray;
 		}
+
+		.bar {
+			fill: steelblue;
+		}
+
+		.axis text {
+			font: 10px sans-serif;
+		}
+
+		.axis path,
+		.axis line {
+			fill: none;
+			stroke: #000;
+			shape-rendering: crispEdges;
+		}
+
+		.x.axis path {
+			display: none;
+		}
 	</style>
 </head>
 
@@ -216,7 +235,7 @@
 									</h4>
 								</div>
 								<div id="collapse2Two" class="panel-collapse collapse">
-									<div class="panel-body">
+									<div class="panel-body" style="height:400px;overflow:auto;">
 										<table class="table table-hover">
 											<thead>
 												<tr>
@@ -233,24 +252,24 @@
 							<div class="panel panel-default">
 								<div class="panel-heading">
 									<h4 class="panel-title">
-										<a data-toggle="collapse" data-target="#collapse2Three" href="#collapse2Three" class="collapsed" onclick="">Vizualizacija
+										<a data-toggle="collapse" data-target="#collapse2Three" href="#collapse2Three" class="collapsed">Vizualizacija
 										</a>
 									</h4>
 								</div>
 								<div id="collapse2Three" class="panel-collapse collapse">
 									<div class="panel-body">
-										<form class="form-inline" role="form">
-											<div class="form-group">
+											<div style="display:inline-block">
 												<span class="label label-default">Datum</span><input style="width:100px;" id="grafdatum" type="text" class="form-control" placeholder="2001-11-09" value="2001-11-09">
 											</div>
-											<div class="form-group">
-												<span class="label label-default">+/- dni</span><input style="width:45px;" id="grafpm" type="text" class="form-control" placeholder="5" value="5">
+											<div style="display:inline-block">
+												<span class="label label-default" title="min 0, max 22">+/- dni</span><input style="width:45px;" id="grafpm" type="text" class="form-control" placeholder="5" value="5">
 											</div>
-											<button type="button" class="btn btn-primary btn-xs" onclick="">Nariši</button><span id="narisi"></span>
-										</form>
+											<button type="button" class="btn btn-primary btn-xs" onclick="poizvediDatumi()">Nariši</button><span id="narisi"></span>
 										<hr>
-										<div id="graf">
-											ttest
+										<div id="graf" style="display:none;">
+											<svg class="chart" width="480" height="250" viewBox="0 0 480 250" preserveAspectRatio="xMidYMid">
+
+											</svg>
 										</div>
 									</div>
 								</div>
