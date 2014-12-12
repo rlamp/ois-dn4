@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>myPup - EHR za spremljanje odvajanja blata</title>
+	<link rel="shortcut icon" href="http://www.iconarchive.com/download/i88344/icons8/ios7/Household-Toilet-Pan.ico">
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css"><!-- bootstrap css -->
@@ -63,6 +64,9 @@
 		.x.axis path {
 			display: none;
 		}
+
+
+		#zgodovina .master:hover { cursor: pointer; cursor: hand; }
 	</style>
 </head>
 
@@ -81,6 +85,7 @@
 						<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseOne">
 							Dodaj novo osebo
 						</a>
+						<button class="btn btn-danger btn-xs" onclick="generiraj()" id="genbtn" style="float:right;margin-right:15px;margin-top:0px;">Generiraj!</button>
 					</h4>
 				</div>
 				<div id="collapseOne" class="panel-collapse collapse">
@@ -98,7 +103,7 @@
 								</div>
 							</div>	
 						</form>
-						<button type="button" class="btn btn-primary btn-xs" onclick="createEHR()">Dodaj</button><span id="createMsg"></span>
+						<button type="button" class="btn btn-primary btn-xs" onclick="createEHRfromForm()">Dodaj</button><span id="createMsg"></span>
 					</div>
 				</div>
 			</div>
@@ -172,7 +177,7 @@
 									</div>
 								</div>
 							</div>
-							<button type="button" class="btn btn-primary btn-xs" onclick="dodajEHRvnos()">Dodaj</button>
+							<button type="button" class="btn btn-primary btn-xs" onclick="dodajEHRvnosForm()">Dodaj</button>
 							<span id="ehrvnosMsg"></span>
 						</form>
 					</div>
@@ -182,6 +187,7 @@
 				<div class="panel-heading">
 					<h4 class="panel-title">
 						<a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion" href="#collapseThree">Odpri kartoteko</a>
+						<select type="select" class="form-control input-sm" id="genPac" style="display:none;height:20px;width:200px;margin-top:0px;float:right;margin-right:15px;padding:0px;"><option selected style='display:none;'></option></select>
 					</h4>
 				</div>
 				<div id="collapseThree" class="panel-collapse collapse">
@@ -189,9 +195,9 @@
 						<form role="form">
 							<div class="form-group">
 								<label for="preberiEHRid" class="label label-default">EHR ID</label>
-								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="83108075-2765-4cfa-8d37-f03596d664a5">
+								<input id="preberiEHRid" type="text" class="form-control input-mini" placeholder="83108075-2765-4cfa-8d37-f03596d664a5" value="92bfeabc-da97-4163-8b33-ebf3049cc508">
 							</div>
-							<button type="button" class="btn btn-primary btn-xs" onclick="poizvedi()">Poizvedi</button><span id="poizvediMsg"></span>
+							<button type="button" class="btn btn-primary btn-xs" onclick="poizvedi()" id="poizvedibtn">Poizvedi</button><span id="poizvediMsg"></span>
 
 						</form>
 						<hr>
@@ -235,7 +241,7 @@
 									</h4>
 								</div>
 								<div id="collapse2Two" class="panel-collapse collapse">
-									<div class="panel-body" style="height:400px;overflow:auto;">
+									<div class="panel-body" style="max-height:400px;overflow:auto;">
 										<table class="table table-hover">
 											<thead>
 												<tr>
@@ -258,13 +264,13 @@
 								</div>
 								<div id="collapse2Three" class="panel-collapse collapse">
 									<div class="panel-body">
-											<div style="display:inline-block">
-												<span class="label label-default">Datum</span><input style="width:100px;" id="grafdatum" type="text" class="form-control" placeholder="2001-11-09" value="2001-11-09">
-											</div>
-											<div style="display:inline-block">
-												<span class="label label-default" title="min 0, max 22">+/- dni</span><input style="width:45px;" id="grafpm" type="text" class="form-control" placeholder="5" value="5">
-											</div>
-											<button type="button" class="btn btn-primary btn-xs" onclick="poizvediDatumi()">Nariši</button><span id="narisi"></span>
+										<div style="display:inline-block">
+											<span class="label label-default">Datum</span><input style="width:100px;" id="grafdatum" type="text" class="form-control" placeholder="2001-11-09" value="2001-11-09">
+										</div>
+										<div style="display:inline-block">
+											<span class="label label-default" title="min 0, max 15">+/- dni</span><input style="width:45px;" id="grafpm" type="text" class="form-control" placeholder="5" value="5">
+										</div>
+										<button type="button" class="btn btn-primary btn-xs" onclick="poizvediDatumi()">Nariši</button><span id="narisi"></span>
 										<hr>
 										<div id="graf" style="display:none;">
 											<svg class="chart" width="480" height="250" viewBox="0 0 480 250" preserveAspectRatio="xMidYMid">

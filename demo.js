@@ -6,12 +6,13 @@ https://rest.ehrscape.com/rest/v1/view/83108075-2765-4cfa-8d37-f03596d664a5/faec
 https://rest.ehrscape.com/rest/v1/query/?aql=select a_a#origin/value as origin from EHR e contains COMPOSITION a contains OBSERVATION a_a#Faeces where e#ehr_id='83108075-2765-4cfa-8d37-f03596d664a5'
 */
 
-
+//----------------------------------------------------
 var baseUrl = 'https://rest.ehrscape.com/rest/v1';
 var queryUrl = baseUrl + '/query';
 
 var username = "ois.seminar";
 var password = "ois4fri";
+//----------------------------------------------------
 
 function getSessionId() {
 	var response = $.ajax({
@@ -31,13 +32,22 @@ function clearInputs(){
 	$("#createDateTime").val("");
 }
 
-function createEHR() {
+function createEHRfromForm() {
 	var givenName = $("#createName").val();
 	var familyName = $("#createSurname").val();
 	var dateOfBirth = $("#createDateTime").val();
 
+	createEHR(givenName, familyName, dateOfBirth, true, null);
+}
+
+function createEHR(givenName, familyName, dateOfBirth, form, p){
 	if (!givenName || !familyName || !dateOfBirth || givenName.trim().length == 0 || familyName.trim().length == 0 || dateOfBirth.trim().length == 0) {
-		$("#createMsg").html("<span class='label label-warning fade-in'>Prosim vnesite vse podatke!</span>");
+		if(form){
+			$("#createMsg").html("<span class='label label-warning fade-in'>Prosim vnesite vse podatke!</span>");
+		}
+		else{
+			console.log("createEHR: neustrezni podatki");
+		}
 	} else {
 		$.ajaxSetup({
 			headers: {"Ehr-Session": sessionId}
@@ -60,19 +70,38 @@ function createEHR() {
 					data: JSON.stringify(partyData),
 					success: function (party) {
 						if (party.action == 'CREATE') {
-							$("#createMsg").html("<span class='label label-success fade-in'>Uspešno kreiran EHR '" + ehrId + "'.</span>");
-							copyToClipboard(ehrId);
-							clearInputs();
+							if(form){
+								$("#createMsg").html("<span class='label label-success fade-in'>Uspešno kreiran EHR '" + ehrId + "'.</span>");
+								copyToClipboard(ehrId);
+								clearInputs();
+							}
+							else{
+								console.log("Uspesno ustvarjen: " + ehrId);
+								$("#genPac").append("<option value='"+ehrId+"'>"+givenName+" "+familyName+"</option>");
+								for(var i = 1; i < 22; i++){
+									var datura = new Date("2014-11-01");
+									if(p.ime == "Kita"){
+										datura.setHours(i);
+									}
+									else{
+										datura.setDate(datura.getDate()+i);
+									}
+									datura = datura.toISOString();
+									dodajEHRvnos(ehrId, datura, p.barva, p.krv, p.kons, "1000", "1536", false);
+								}
+							}
 						}
 					},
 					error: function(err) {
-						$("#createMsg").html("<span class='label label-danger fade-in'>Napaka '" + JSON.parse(err.responseText).userMessage + "'!");
+						if(form){
+							$("#createMsg").html("<span class='label label-danger fade-in'>Napaka '" + JSON.parse(err.responseText).userMessage + "'!");
+						}
 						console.log(JSON.parse(err.responseText).userMessage);
 					}
 				});
-			}
-		});
-	}
+}
+});
+}
 }
 
 function poizvedi(){
@@ -106,11 +135,12 @@ function poizvedi(){
 	}	
 }
 
+
 function copyToClipboard(text) {
 	window.prompt("Prosimo, shranite si svojo EHD ID številko za nadaljno uporabo aplikacije: Ctrl+C, Enter", text);
 }
 
-function dodajEHRvnos() {
+function dodajEHRvnosForm() {
 	var ehrId = $("#ehrIdPoizvedba").val();
 	var datumInUra = $("#datumcas").val();
 	var barva = $("#barva").val();
@@ -119,6 +149,10 @@ function dodajEHRvnos() {
 	var masa = $("#kolicina").val();
 	var vol = $("#volumen").val();
 
+	dodajEHRvnos(ehrId, datumInUra, barva, krv, kons, masa, vol, true);
+}
+
+function dodajEHRvnos(ehrId, datumInUra, barva, krv, kons, masa, vol, form){
 	var dngr = ["at0016", "at0020", "at0033", "at0034", "at0022"];
 	var constepated = ["at0035", "at0036"];
 	var diareja = ["at0039", "at0040","at0041"];
@@ -135,7 +169,13 @@ function dodajEHRvnos() {
 	}
 
 	if (!ehrId || ehrId.trim().length == 0 || !datumInUra || !barva || !kons || !masa || !vol || !stanje) {
-		$("#ehrvnosMsg").html("<span class='obvestilo label label-warning fade-in'>Prosim vnesite zahtevane podatke!</span>");
+		if(form){
+			$("#ehrvnosMsg").html("<span class='obvestilo label label-warning fade-in'>Prosim vnesite zahtevane podatke!</span>");
+		}
+		else{
+			console.log("DodajEHRvnos: neustrezni podatki");
+			console.log(ehrId + " " + datumInUra + " " + barva + " "+ krv + " " + kons + " " + masa+ " " + vol)
+		}
 	} 
 	else {
 		$.ajaxSetup({
@@ -169,14 +209,18 @@ function dodajEHRvnos() {
 			data: JSON.stringify(podatki),
 			success: function (res) {
 				console.log(res.meta.href);
-				$("#ehrvnosMsg").html("<span class='obvestilo label label-success fade-in'>Uspešno!</span>");
+				if(form){
+					$("#ehrvnosMsg").html("<span class='obvestilo label label-success fade-in'>Uspešno!</span>");
+				}
 			},
 			error: function(err) {
-				$("#ehrvnosMsg").html("<span class='obvestilo label label-danger fade-in'>Napaka!</span>");
+				if(form){
+					$("#ehrvnosMsg").html("<span class='obvestilo label label-danger fade-in'>Napaka!</span>");
+				}
 				console.log(JSON.parse(err.responseText).userMessage);
 			}
 		});
-	}	
+	}
 }
 
 function poizvediZgodovina(){
@@ -201,7 +245,7 @@ function poizvediZgodovina(){
 						bgcl = "success";
 					}
 
-					var tr = "<tr id='master"+i.toString()+"'onclick='poizvediDetail("+i+")' data-toggle=\"collapse\" data-target=\"#detail"+i.toString()+"\" class='"+bgcl+"'><td>"+obj.origin.slice(0,-13)+"</td><td>"+obj.Stanje+"</td></tr>";
+					var tr = "<tr id='master"+i.toString()+"'onclick='poizvediDetail("+i+")' data-toggle=\"collapse\" data-target=\"#detail"+i.toString()+"\" class='master "+bgcl+"'><td>"+obj.origin.slice(0,-13)+"</td><td>"+obj.Stanje+"</td></tr>";
 					var tr2="<tr id='detail"+i.toString()+"' class='collapse'><td colspan='2'><table class='table table-bordered'><tbody></tbody></table></td></tr>";
 					$("#zgodovina").append(tr);
 					$("#zgodovina").append(tr2);
@@ -217,7 +261,8 @@ function poizvediDetail(i){
 	$("#detail"+i).toggleClass("masterdetail");
 	if($("#detail"+i+" tbody").empty()){
 		var ehrId = $("#poizvedbaId").text();
-		var datum = $("#master"+i+" td:first").text();
+		var datum = $($("#master"+i+" td").get(0)).text();
+		var status = $($("#master"+i+" td").get(1)).text();
 
 		var aql="select%20distinct%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0015]/value/value%20as%20Barva,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0023]/value/value%20as%20Krvavitev,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0024]/value/value%20as%20Konsistenca,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0031]/value/magnitude%20as%20Masa_magnitude,%20a_a/data[at0001]/events[at0002]/data[at0003]/items[at0032]/value/magnitude%20as%20Volumen_magnitude%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id/value='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value='"+datum+"'";
 
@@ -233,6 +278,12 @@ function poizvediDetail(i){
 				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Konsistenca:</strong></td><td>"+result[0].Konsistenca+"</td></tr>");
 				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Masa:</strong></td><td>"+result[0].Masa_magnitude+" g</td></tr>");
 				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Volumen:</strong></td><td>"+result[0].Volumen_magnitude+" mL</td></tr>");
+
+				if(status == "Kritično"){
+					
+
+
+				}
 			}
 		});
 	}
@@ -243,60 +294,56 @@ function poizvediDatumi(){
 	var ehrId = $("#poizvedbaId").text();
 	
 	var pm = parseInt($("#grafpm").val());
-	if(pm > 22){pm=22;}
+	if(pm > 15){pm=15;}
 	if(pm<0){pm=0;}
 
 	var date = $("#grafdatum").val();
 	date = new Date(date);
-	date.setDate(date.getDate()-pm);
+	date.setDate(date.getDate()-pm-1);
 	pm = (2*pm) + 1;
 
 	var datumi=[];
-	var count = 0;
 	var asindate = new Date(date);
-	asindate.setDate(date.getDate()-1);
+	asindate.setDate(date.getDate());
 
 	for(var i = 0; i < pm; i++){
-		var dat = new Date(date);
-		dat.setDate(dat.getDate()+i)
+		date.setDate(date.getDate()+1);
 
-		var dat1 = new Date(dat);
-		var dat2 = new Date(dat);
+		var dat1 = new Date(date);
+		var dat2 = new Date(date);
 		dat2.setDate(dat1.getDate()+1);
 
-		dat = dat.toISOString();
 		dat1 = dat1.toISOString();
 		dat2 = dat2.toISOString();
 		// dat1 <= x < dat2
-		console.log(dat1); //prou
-		aql="select%20count(a_a/data[at0001]/origin/value)%20as%20n%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value%20>=%20'"+dat1+"'%20and%20a_a/data[at0001]/origin/value%20<%20'"+dat2+"'";
+
+		var aql="select%20count(a_a/data[at0001]/origin/value)%20as%20n%20from%20EHR%20e%20contains%20COMPOSITION%20a%20contains%20OBSERVATION%20a_a[openEHR-EHR-OBSERVATION.faeces.v1]%20where%20e/ehr_id='"+ehrId+"'%20and%20a_a/data[at0001]/origin/value%20>=%20'"+dat1+"'%20and%20a_a/data[at0001]/origin/value%20<%20'"+dat2+"'";
 
 		$.ajax({
 			url: baseUrl + "/query/?aql=" + aql,
 			type: 'GET',
 			headers: {"Ehr-Session": sessionId},
 			success: function (data2) {
-				count++;
 				asindate.setDate(asindate.getDate()+1);
 				var rez=data2.resultSet[0].n;
 				
 				var tmp = new Object();
 				tmp["name"]=asindate.toISOString().slice(0,10);
 				tmp["value"]=rez;
-				console.log(tmp);
+
 				datumi.push(tmp);
 
 				if(datumi.length == pm){;
 					risiGraf(datumi);
 				}
-			}
+			},
 		});
 	}
 }
 
 function type(d) {
-  d.value = +d.value;
-  return d;
+	d.value = +d.value;
+	return d;
 }
 
 function risiGraf(data){
@@ -327,8 +374,6 @@ function risiGraf(data){
 	.attr("height", height + margin.top + margin.bottom)
 	.append("g")
 	.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-
 
 	x.domain(data.map(function(d) { return d.name; }));
 	y.domain([0, d3.max(data, function(d) { return d.value; })]);
@@ -371,10 +416,31 @@ function risiGraf(data){
 
 }
 
-$(window).on("resize", function() {
-	var aspect = 480 / 250,
-	chart = $(".chart");
-	var targetWidth = chart.parent().width();
-	chart.attr("width", targetWidth);
-	chart.attr("height", targetWidth / aspect);
+function generiraj(){
+	//function createEHR(givenName, familyName, dateOfBirth, form)
+	//function dodajEHRvnos(ehrId, datumInUra, barva, krv, kons, masa, vol, form)
+	var data = [{ime:"Matako", priimek:"Kojama", birth:"1939-09-01", barva:"at0017", krv:false, kons:"at0038"},
+	{ime:"Okoplota", priimek:"Sigamota", birth:"1945-04-30", barva:"at0017", krv:false, kons:"at0035"},
+	{ime:"Kita", priimek:"Muhira", birth:"1889-04-20", barva:"at0019", krv:true, kons:"at0041"}];	
+
+	data.forEach(function(p){
+		createEHR(p.ime, p.priimek, p.birth, false, p);
+	});
+	$("#genbtn").css("display", "none");
+	$("#genPac").css("display", "inline-block");
+}
+
+$(document).ready(function(){
+	$(window).on("resize", function() {
+		var aspect = 480 / 250,
+		chart = $(".chart");
+		var targetWidth = chart.parent().width();
+		chart.attr("width", targetWidth);
+		chart.attr("height", targetWidth / aspect);
+	});
+
+	$("#genPac").change(function(){
+		$("#preberiEHRid").val($(this).val());
+		$("#poizvedibtn").click();
+	});
 });
