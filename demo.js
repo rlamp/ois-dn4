@@ -78,6 +78,7 @@ function createEHR(givenName, familyName, dateOfBirth, form, p){
 							else{
 								console.log("Uspesno ustvarjen: " + ehrId);
 								$("#genPac").append("<option value='"+ehrId+"'>"+givenName+" "+familyName+"</option>");
+								
 								for(var i = 1; i < 22; i++){
 									var datura = new Date("2014-11-01");
 									if(p.ime == "Kita"){
@@ -115,6 +116,8 @@ function poizvedi(){
 			type: 'GET',
 			headers: {"Ehr-Session": sessionId},
 			success: function (data) {
+				$(".chart").html("");
+				$("#graf").css("display", "none");
 				$("#poizvediMsg").html("<span class='label label-success fade-in'>Uspešno!");
 				$("#accordion2").css("display","inline");
 				$("#accordion2 h4 a").addClass("collapsed");
