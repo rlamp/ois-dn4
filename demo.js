@@ -258,7 +258,17 @@ function poizvediZgodovina(){
 		});
 	}
 }
-
+var zdarvnikidotorg =[];
+function opozorilo(i){
+	$("#detail"+i+" tbody").append("<tr><td colspan='2'><span class='label label-danger'>POZOR</span> kritično stanje! Priporočamo, da obiščete enega od naslednjih specialistov: </td></tr>");
+	$.each(zdarvnikidotorg, function(index, v){
+		var vejica = ", ";
+		if(index == zdarvnikidotorg.length - 1 ){
+			vejica="";
+		}
+		$("#detail"+i+" tbody td:last").append("<a href='http://zdravniki.org" + $(v).attr("href") + "'>" + $(v).text() + "</a>"+vejica);
+	});
+}
 function poizvediDetail(i){
 	$("#master"+i).toggleClass("masterdetail");
 	$("#detail"+i).toggleClass("masterdetail");
@@ -283,13 +293,20 @@ function poizvediDetail(i){
 				$("#detail"+i+" tbody").append("<tr><td class='col-md-3'><strong>Volumen:</strong></td><td>"+result[0].Volumen_magnitude+" mL</td></tr>");
 
 				if(status == "Kritično"){
-					
-
-
+					if(zdarvnikidotorg.length == 0){
+						$.get("https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20html%20where%20url%3D%22http%3A%2F%2Fzdravniki.org%2Fiskanje%3Fsearch%3Dgastro%22")
+						.done(function(data){
+							zdarvnikidotorg = data.getElementById("list").getElementsByTagName("a");
+							opozorilo(i);
+						});
+					}
+					else{
+						opozorilo(i);
+					}
 				}
 			}
 		});
-	}
+}
 }
 
 function poizvediDatumi(){
